@@ -87,7 +87,7 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                     page.Canvas.DrawImage(image, new PointF(tempwidth,100));
                     doc.SaveToStream(ms);
                     doc.Close();
-                    return File(ms.ToArray(), "application/pdf", "a.pdf");
+                    return File(ms.ToArray(), "application/pdf", "qr_exportado.pdf");
                 }
 
             }
