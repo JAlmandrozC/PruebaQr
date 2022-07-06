@@ -35,10 +35,11 @@ namespace PruebaQr.Areas.HelpPage.Controllers
         public async Task<ActionResult> QrExport(QrDto dto)
         {
             //Metodo para cargar las imagenes
-            string[] images = GetPath();
+
+            var imageLogo1 = _service.GetImage(dto.ImageUrl1);
+            var imageLogo2 = _service.GetImage(dto.ImageUrl2);
 
 
-            
             using (MemoryStream ms = new MemoryStream())
             {
 
@@ -67,8 +68,8 @@ namespace PruebaQr.Areas.HelpPage.Controllers
 
 
                 //parametro y metodo para cargar las imagenes
-                PdfImage logo1 = PdfImage.FromFile(images[1]);
-                PdfImage logo2 = PdfImage.FromFile(images[0]);
+                PdfImage logo1 = PdfImage.FromStream(_service.ToStream(imageLogo1));
+                PdfImage logo2 = PdfImage.FromStream(_service.ToStream(imageLogo2));
                 
                 //Texto del guid
                 page.Canvas.DrawString(dto.Id.ToString(), font, new PdfSolidBrush(Color.Black), 10, 350);
