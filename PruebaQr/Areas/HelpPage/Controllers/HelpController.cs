@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using PruebaQr.Areas.HelpPage.ModelDescriptions;
 using PruebaQr.Areas.HelpPage.Models;
+using PruebaQr.LL;
+using PruebaQr.Models;
 using QRCoder;
 using Spire.Pdf;
 using Spire.Pdf.Graphics;
@@ -20,10 +22,17 @@ namespace PruebaQr.Areas.HelpPage.Controllers
     [RoutePrefix("pruebas")]
     public class HelpController : Controller
     {
+        protected IQrService _service;
 
-        [Route("qr/{guid}")]
+        public HelpController()
+        {
+            _service = new QrService();
+        }
+
+
+        [Route("qr")]
         [HttpGet]
-        public async Task<ActionResult> QrExport(Guid guid)
+        public async Task<ActionResult> QrExport(QrDto dto)
         {
             //Metodo para cargar las imagenes
             string[] images = GetPath();
@@ -34,9 +43,7 @@ namespace PruebaQr.Areas.HelpPage.Controllers
             {
 
                 // ----QRCoder - Libreria de Nugget
-                QRCodeGenerator qrGenerator = new QRCodeGenerator();
-                QRCodeData qrCodeData = qrGenerator.CreateQrCode(guid.ToString(), QRCodeGenerator.ECCLevel.L);
-                QRCode qrCode = new QRCode(qrCodeData);
+                var qrCode = _service.CreateQr(dto.Id);
 
                 // ----FreeSpirePDF - Libreria de Nugget
 
@@ -45,6 +52,7 @@ namespace PruebaQr.Areas.HelpPage.Controllers
 
                 //Agregar paginas que tendra el pdf ( en este caso solo hay 1 )
                 PdfPageBase page = doc.Pages.Add(PdfPageSize.A6, new PdfMargins(0));
+
                 PdfGraphicsState state = page.Canvas.Save();
 
                 //si se incluye texto, con esto se modifica los parametros que tendra ( estilos )
@@ -63,7 +71,7 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                 PdfImage logo2 = PdfImage.FromFile(images[0]);
                 
                 //Texto del guid
-                page.Canvas.DrawString(guid.ToString(), font, new PdfSolidBrush(Color.Black), 10, 350);
+                page.Canvas.DrawString(dto.Id.ToString(), font, new PdfSolidBrush(Color.Black), 10, 350);
 
                 
                 //transformar el QR a imagen
@@ -75,20 +83,23 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                 //dibujar las imagenes
                 page.Canvas.DrawImage(logo1, new PointF(10,10), new SizeF(120,50));
                 page.Canvas.DrawImage(logo2, new PointF(165, 10), new SizeF(120, 50));
-                
+
+                PdfImage image;
                 using (Bitmap bitMap = qrCode.GetGraphic(10))
                 {
                     Bitmap resized = new Bitmap(bitMap, new Size(290, 290));
 
                     resized.Save(img, ImageFormat.Png);
 
-                    PdfImage image = PdfImage.FromStream(img);
+                    image = PdfImage.FromStream(img);
 
-                    page.Canvas.DrawImage(image, new PointF(tempwidth,100));
-                    doc.SaveToStream(ms);
-                    doc.Close();
-                    return File(ms.ToArray(), "application/pdf", "qr_exportado.pdf");
+                    
                 }
+
+                page.Canvas.DrawImage(image, new PointF(tempwidth, 100));
+                doc.SaveToStream(ms);
+                doc.Close();
+                return File(ms.ToArray(), "application/pdf", "qr_exportado.pdf");
 
             }
         }
