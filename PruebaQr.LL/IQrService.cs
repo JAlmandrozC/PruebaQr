@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
+using Spire.Pdf.Graphics;
+
 namespace PruebaQr.LL
 {
    public interface IQrService
@@ -15,6 +17,7 @@ namespace PruebaQr.LL
         Stream ToStream(Image image);
 
         Image GetImage(Uri uri);
-  
+
+        dynamic SetColor(string color);  
     }
 }

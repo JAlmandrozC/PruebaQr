@@ -38,7 +38,7 @@ namespace PruebaQr.Areas.HelpPage.Controllers
 
             var imageLogo1 = _service.GetImage(dto.ImageUrl1);
             var imageLogo2 = _service.GetImage(dto.ImageUrl2);
-
+           
 
             using (MemoryStream ms = new MemoryStream())
             {
@@ -57,11 +57,13 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                 PdfGraphicsState state = page.Canvas.Save();
 
                 //si se incluye texto, con esto se modifica los parametros que tendra ( estilos )
-                PdfTrueTypeFont font = new PdfTrueTypeFont(new Font("Helvetica", 12f, FontStyle.Bold), true);
+                PdfTrueTypeFont font = new PdfTrueTypeFont(new Font("Helvetica", 20f, FontStyle.Bold), true);
 
 
                 //dibujar figuras, en este caso un recantigulo que cubrira al pdf de azul para simular un fondo
-                PdfBrush brush = new PdfSolidBrush(Color.Blue);
+            
+               var brush = _service.SetColor(dto.ColorBody);
+
                 
                 page.Canvas.DrawRectangle(brush, new RectangleF(new Point(0, 0), PdfPageSize.A6));
                 page.Canvas.Restore(state);
@@ -69,12 +71,12 @@ namespace PruebaQr.Areas.HelpPage.Controllers
 
                 //parametro y metodo para cargar las imagenes
                 PdfImage logo1 = PdfImage.FromStream(_service.ToStream(imageLogo1));
+                
                 PdfImage logo2 = PdfImage.FromStream(_service.ToStream(imageLogo2));
                 
-                //Texto del guid
-                page.Canvas.DrawString(dto.Id.ToString(), font, new PdfSolidBrush(Color.Black), 10, 350);
-
                 
+
+
                 //transformar el QR a imagen
                 MemoryStream img = new MemoryStream();
 
@@ -82,8 +84,25 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                 var tempwidth = float.Parse((79.4).ToString()) / 2;
 
                 //dibujar las imagenes
-                page.Canvas.DrawImage(logo1, new PointF(10,10), new SizeF(120,50));
+                PdfPen pen1 = new PdfPen(Color.Red, 1f);
+                page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(7, 7), new Size(125, 50)));
+                page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(165, 10), new Size(120, 50)));
+                page.Canvas.DrawImage(logo1, new Rectangle(new Point(10, 10), new Size(120, 45)));
                 page.Canvas.DrawImage(logo2, new PointF(165, 10), new SizeF(120, 50));
+
+                //footer
+
+                var brushFooter = _service.SetColor(dto.ColorFooter);
+
+
+                page.Canvas.DrawRectangle(brushFooter, new RectangleF(new Point(0, 350), PdfPageSize.A6));
+                page.Canvas.Restore(state);
+
+                //Texto
+                page.Canvas.DrawString(dto.Label1, font, new PdfSolidBrush(Color.Black), 10, 350);
+                page.Canvas.DrawString(dto.Label2, font, new PdfSolidBrush(Color.Black), 100, 350);
+                page.Canvas.DrawString(dto.TextFooter1, font, new PdfSolidBrush(Color.Black), 10, 370);
+                page.Canvas.DrawString(dto.TextFooter2, font, new PdfSolidBrush(Color.Black), 100, 370);
 
                 PdfImage image;
                 using (Bitmap bitMap = qrCode.GetGraphic(10))

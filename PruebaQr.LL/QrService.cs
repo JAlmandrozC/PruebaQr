@@ -1,4 +1,5 @@
 ﻿using QRCoder;
+using Spire.Pdf.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace PruebaQr.LL
 {
@@ -37,6 +39,33 @@ namespace PruebaQr.LL
             Image image = (Image)bitmap;
 
             return image;
+        }
+
+        public dynamic SetColor(string color)
+        {
+            PdfSolidBrush brush = new PdfSolidBrush(Color.White);
+            switch (color)
+            {
+                case "White":
+
+                    brush = new PdfSolidBrush(Color.White);
+                    break;
+
+                case "Blue":
+                    brush = new PdfSolidBrush(Color.Blue);
+                    break;
+                case "Gray":
+                    brush = new PdfSolidBrush(Color.Gray);
+                    break;
+                case "LightGray":
+                    brush = new PdfSolidBrush(Color.LightGray);
+                    break;
+                case "":
+                    brush = new PdfSolidBrush(Color.White);
+                    break;
+            }
+
+            return brush;
         }
 
         public Stream ToStream(Image image)
