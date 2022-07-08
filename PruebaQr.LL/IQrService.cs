@@ -14,6 +14,8 @@ namespace PruebaQr.LL
 
         dynamic CreateQr(Guid guid);
 
+        dynamic CreateCustomQr(string str);
+
         Stream ToStream(Image image);
 
         Image GetImage(Uri uri);

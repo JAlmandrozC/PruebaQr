@@ -128,6 +128,103 @@ namespace PruebaQr.Areas.HelpPage.Controllers
             }
         }
 
+        [Route("qr/custom")]
+        [HttpGet]
+        public async Task<ActionResult> QrCustomExport(int idempresa, string idproceso)
+        {
+            //Metodo para cargar las imagenes
+
+
+            //Con esto se crea el tipo de documento (pdf)
+            PdfDocument doc = new PdfDocument();
+
+            //Agregar paginas que tendra el pdf ( en este caso solo hay 1 )
+            PdfPageBase page = doc.Pages.Add(new SizeF(400, 150), new PdfMargins(0));
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+
+                // ----QRCoder - Libreria de Nugget
+                var qrCode = _service.CreateCustomQr(idproceso);
+
+                // ----FreeSpirePDF - Libreria de Nugget
+
+
+
+                PdfGraphicsState state = page.Canvas.Save();
+
+                //si se incluye texto, con esto se modifica los parametros que tendra ( estilos )
+                PdfTrueTypeFont font = new PdfTrueTypeFont(new Font("Helvetica", 20f, FontStyle.Bold), true);
+
+                PdfPen pen1 = new PdfPen(Color.Black, 1f);
+                page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(5, 5), new Size(390, 140)));
+
+                //dibujar figuras, en este caso un recantigulo que cubrira al pdf de azul para simular un fondo
+
+
+
+
+                //parametro y metodo para cargar las imagenes
+
+
+
+
+
+                //transformar el QR a imagen
+
+
+                //una variable temporal que asimila el valor mas cercano para centrar el gráfico de QR
+                var tempwidth = float.Parse((79.4).ToString()) / 2;
+
+                //dibujar las imagenes
+                //PdfPen pen1 = new PdfPen(Color.Red, 1f);
+                //page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(7, 7), new Size(125, 50)));
+                //page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(162, 7), new Size(125, 50)));
+
+                //footer
+
+                //var brushFooter = _service.SetColor(dto.ColorFooter);
+
+
+                //page.Canvas.DrawRectangle(brushFooter, new RectangleF(new Point(0, 350), PdfPageSize.A6));
+                //page.Canvas.Restore(state);
+
+                //Texto
+
+                //PdfStringFormat centerAlignment = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Middle);
+
+                page.Canvas.DrawString("D001-S001", font, new PdfSolidBrush(Color.Black), 150, 10);
+
+                page.Canvas.DrawString("EMPRESA", font, new PdfSolidBrush(Color.Black), 270, 10);
+
+                page.Canvas.DrawString("R02 0101002N", font, new PdfSolidBrush(Color.Black), 150, 40);
+
+                page.Canvas.DrawString("PERNOS-12", font, new PdfSolidBrush(Color.Black), 150, 70);
+
+                page.Canvas.DrawString("UBICACIÓN", font, new PdfSolidBrush(Color.Black), 150, 100);
+
+                //page.Canvas.DrawString(dto.TextFooter1 + "   " + dto.TextFooter2, font, new PdfSolidBrush(Color.Black), page.Canvas.ClientSize.Width / 2, 400, centerAlignment);
+                MemoryStream img = new MemoryStream();
+                PdfImage image;
+                using (Bitmap bitMap = qrCode.GetGraphic(10))
+                {
+                    Bitmap resized = new Bitmap(bitMap, new Size(170, 170));
+
+                    resized.Save(img, ImageFormat.Png);
+
+                    image = PdfImage.FromStream(img);
+
+
+                }
+
+                page.Canvas.DrawImage(image, new PointF(10, 10));
+                doc.SaveToStream(ms);
+                doc.Close();
+                return File(ms.ToArray(), "application/pdf", "qrcustom_exportado.pdf");
+
+            }
+        }
+
         [Route("qr/lista")]
         [HttpGet]
         public async Task<ActionResult> QrListExport(List<QrDto> dto)

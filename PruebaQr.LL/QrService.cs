@@ -19,7 +19,14 @@ namespace PruebaQr.LL
                 
         }
 
+        public dynamic CreateCustomQr(string str)
+        {
+            QRCodeGenerator qrGenerator = new QRCodeGenerator();
+            QRCodeData qrCodeData = qrGenerator.CreateQrCode(str, QRCodeGenerator.ECCLevel.L);
+            QRCode qrCode = new QRCode(qrCodeData);
 
+            return qrCode;
+        }
 
         public dynamic CreateQr(Guid guid)
         {
