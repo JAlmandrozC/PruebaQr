@@ -39,7 +39,12 @@ namespace PruebaQr.Areas.HelpPage.Controllers
 
             var imageLogo1 = _service.GetImage(dto.ImageUrl1);
             var imageLogo2 = _service.GetImage(dto.ImageUrl2);
-           
+
+            //Con esto se crea el tipo de documento (pdf)
+            PdfDocument doc = new PdfDocument();
+
+            //Agregar paginas que tendra el pdf ( en este caso solo hay 1 )
+            PdfPageBase page = doc.Pages.Add(PdfPageSize.A6, new PdfMargins(0));
 
             using (MemoryStream ms = new MemoryStream())
             {
@@ -49,11 +54,7 @@ namespace PruebaQr.Areas.HelpPage.Controllers
 
                 // ----FreeSpirePDF - Libreria de Nugget
 
-                //Con esto se crea el tipo de documento (pdf)
-                PdfDocument doc = new PdfDocument();
 
-                //Agregar paginas que tendra el pdf ( en este caso solo hay 1 )
-                PdfPageBase page = doc.Pages.Add(PdfPageSize.A6, new PdfMargins(0));
 
                 PdfGraphicsState state = page.Canvas.Save();
 
@@ -87,9 +88,9 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                 //dibujar las imagenes
                 PdfPen pen1 = new PdfPen(Color.Red, 1f);
                 page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(7, 7), new Size(125, 50)));
-                page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(165, 10), new Size(120, 50)));
+                page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(162, 7), new Size(125, 50)));
                 page.Canvas.DrawImage(logo1, new Rectangle(new Point(10, 10), new Size(120, 45)));
-                page.Canvas.DrawImage(logo2, new PointF(165, 10), new SizeF(120, 50));
+                page.Canvas.DrawImage(logo2, new PointF(165, 10), new SizeF(120, 45));
 
                 //footer
 
@@ -100,10 +101,12 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                 page.Canvas.Restore(state);
 
                 //Texto
-                page.Canvas.DrawString(dto.Label1, font, new PdfSolidBrush(Color.Black), 10, 350);
-                page.Canvas.DrawString(dto.Label2, font, new PdfSolidBrush(Color.Black), 100, 350);
-                page.Canvas.DrawString(dto.TextFooter1, font, new PdfSolidBrush(Color.Black), 10, 370);
-                page.Canvas.DrawString(dto.TextFooter2, font, new PdfSolidBrush(Color.Black), 100, 370);
+
+                PdfStringFormat centerAlignment = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Middle);
+
+                page.Canvas.DrawString(dto.Label1 + "   " + dto.Label2, font, new PdfSolidBrush(Color.Black), page.Canvas.ClientSize.Width / 2, 370,centerAlignment);
+
+                page.Canvas.DrawString(dto.TextFooter1 + "   " + dto.TextFooter2, font, new PdfSolidBrush(Color.Black), page.Canvas.ClientSize.Width / 2, 400, centerAlignment);
 
                 PdfImage image;
                 using (Bitmap bitMap = qrCode.GetGraphic(10))
