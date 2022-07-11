@@ -3,6 +3,7 @@ using Spire.Pdf.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -34,8 +35,9 @@ namespace PruebaQr.LL
             QRCodeData qrCodeData = qrGenerator.CreateQrCode(guid.ToString(), QRCodeGenerator.ECCLevel.L);
             QRCode qrCode = new QRCode(qrCodeData);
 
-            return qrCode;
+            return (qrCode);
         }
+        
 
         public Image GetImage(Uri uri)
         {
@@ -48,29 +50,20 @@ namespace PruebaQr.LL
             return image;
         }
 
-        public dynamic SetColor(string color)
+        public dynamic GetQr(QRCode code)
         {
-            PdfSolidBrush brush = new PdfSolidBrush(Color.White);
-            switch (color)
-            {
-                case "White":
+            return code;
+        }
 
-                    brush = new PdfSolidBrush(Color.White);
-                    break;
+        public void ResizeQr(PdfImage image)
+        {
+            throw new NotImplementedException();
+        }
 
-                case "Blue":
-                    brush = new PdfSolidBrush(Color.Blue);
-                    break;
-                case "Gray":
-                    brush = new PdfSolidBrush(Color.Gray);
-                    break;
-                case "LightGray":
-                    brush = new PdfSolidBrush(Color.LightGray);
-                    break;
-                case "":
-                    brush = new PdfSolidBrush(Color.White);
-                    break;
-            }
+        public dynamic SetColor(byte red, byte green, byte blue)
+        {
+            PdfSolidBrush brush = new PdfSolidBrush(new PdfRGBColor(red,green,blue));
+
 
             return brush;
         }

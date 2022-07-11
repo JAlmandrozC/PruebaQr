@@ -13,6 +13,15 @@ namespace PruebaQr.Models
 
         public Uri ImageUrl2 { get; set; }
 
+        public byte RedBody { get; set; }
+        public byte GreenBody { get; set; }
+        public byte BlueBody { get; set; }
+
+        public byte RedFooter { get; set; }
+        public byte GreenFooter { get; set; }
+        public byte BlueFooter { get; set; }
+
+
         public string ColorBody { get; set; }
 
         public string ColorFooter { get; set; }

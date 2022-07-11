@@ -6,13 +6,19 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
 using Spire.Pdf.Graphics;
+using QRCoder;
 
 namespace PruebaQr.LL
 {
    public interface IQrService
     {
 
+
+
+
         dynamic CreateQr(Guid guid);
+
+        void ResizeQr(PdfImage image);
 
         dynamic CreateCustomQr(string str);
 
@@ -20,6 +26,8 @@ namespace PruebaQr.LL
 
         Image GetImage(Uri uri);
 
-        dynamic SetColor(string color);  
+        dynamic SetColor(byte red,byte green, byte blue);  
+
+
     }
 }
