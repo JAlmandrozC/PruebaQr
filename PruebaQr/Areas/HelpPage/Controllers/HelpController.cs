@@ -35,8 +35,6 @@ namespace PruebaQr.Areas.HelpPage.Controllers
         [HttpGet]
         public async Task<ActionResult> QrExport(QrDto dto)
         {
-            //Metodo para cargar las imagenes
-
             var imageLogo1 = _service.GetImage(dto.ImageUrl1);
             var imageLogo2 = _service.GetImage(dto.ImageUrl2);
 
@@ -44,32 +42,13 @@ namespace PruebaQr.Areas.HelpPage.Controllers
             PdfDocument doc = new PdfDocument();
 
             //Agregar paginas que tendra el pdf ( en este caso solo hay 1 )
-            PdfPageBase page = doc.Pages.Add(PdfPageSize.A6, new PdfMargins(0));
-
-   
-            var qrCode = _service.CreateQr(dto.Id);
-            PdfImage image;
-            MemoryStream img = new MemoryStream();
-
-            using (Bitmap bitMap = qrCode.GetGraphic(10))
-            {
-                Bitmap resized = new Bitmap(bitMap, new Size(290, 290));
-
-                resized.Save(img, ImageFormat.Png);
-
-                image = PdfImage.FromStream(img);
-
-
-            }
-
-
-
-
-
+            PdfPageBase page = doc.Pages.Add(PdfPageSize.A5, new PdfMargins(0));
 
             using (MemoryStream ms = new MemoryStream())
             {
 
+                // ----QRCoder - Libreria de Nugget
+                var qrCode = _service.CreateQr(dto.Id);
 
                 // ----FreeSpirePDF - Libreria de Nugget
 
@@ -78,68 +57,92 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                 PdfGraphicsState state = page.Canvas.Save();
 
                 //si se incluye texto, con esto se modifica los parametros que tendra ( estilos )
-                PdfTrueTypeFont font = new PdfTrueTypeFont(new Font("Helvetica", 20f, FontStyle.Bold), true);
+                PdfTrueTypeFont font = new PdfTrueTypeFont(new Font("Roboto", 25f, FontStyle.Bold), true);
+                PdfTrueTypeFont cfont = new PdfTrueTypeFont(new Font("Roboto", 45f, FontStyle.Bold), true);
 
 
                 //dibujar figuras, en este caso un recantigulo que cubrira al pdf de azul para simular un fondo
-            
-               var brush = _service.SetColor(dto.RedBody,dto.GreenBody,dto.BlueBody);
 
-                
-                page.Canvas.DrawRectangle(brush, new RectangleF(new Point(0, 0), PdfPageSize.A6));
+                var brush = _service.SetColor(dto.RedBody, dto.GreenBody, dto.BlueBody);
+
+
+                page.Canvas.DrawRectangle(brush, new RectangleF(new Point(0, 0), PdfPageSize.A5));
                 page.Canvas.Restore(state);
 
 
                 //parametro y metodo para cargar las imagenes
                 PdfImage logo1 = PdfImage.FromStream(_service.ToStream(imageLogo1));
-                
+
                 PdfImage logo2 = PdfImage.FromStream(_service.ToStream(imageLogo2));
-                
-                
+
+
 
 
                 //transformar el QR a imagen
-                
+                MemoryStream img = new MemoryStream();
 
-                //una variable temporal que asimila el valor mas cercano para centrar el gráfico de QR
-                var tempwidth = float.Parse((79.4).ToString()) / 2;
+
 
                 //dibujar las imagenes
                 var brushRect = _service.SetColor(255, 255, 255);
 
-                page.Canvas.DrawRectangle(brushRect, new Rectangle(new Point(7, 7), new Size(125, 50)));
-                page.Canvas.DrawRectangle(brushRect, new Rectangle(new Point(165, 7), new Size(125, 50)));
-                page.Canvas.DrawImage(logo1, new Rectangle(new Point(10, 10), new Size(120, 45)));
-                page.Canvas.DrawImage(logo2, new PointF(168, 10), new SizeF(120, 45));
+                float xr = (page.Canvas.ClientSize.Width / 2 - 180) / 2;
+                float xrn = (page.Canvas.ClientSize.Width / 2) + xr;
+
+                //page.Canvas.DrawRectangle(brushRect, new RectangleF(xr,20,180,120));
+                //page.Canvas.DrawRectangle(brushRect, new RectangleF(xrn,20,180,120));
+                page.Canvas.DrawImage(logo1, new RectangleF(xr, 20, 180, 90));
+                page.Canvas.DrawImage(logo2, new RectangleF(xrn, 20, 180, 90));
 
                 //footer
 
                 var brushFooter = _service.SetColor(dto.RedFooter, dto.GreenFooter, dto.BlueFooter);
 
 
-                page.Canvas.DrawRectangle(brushFooter, new RectangleF(new Point(0, 350), PdfPageSize.A6));
+                page.Canvas.DrawRectangle(brushFooter, new RectangleF(new PointF(0, page.Canvas.ClientSize.Height - (page.Canvas.ClientSize.Height / 6)), PdfPageSize.A5));
                 page.Canvas.Restore(state);
 
                 //Texto
 
-                PdfStringFormat leftAlignment = new PdfStringFormat(PdfTextAlignment.Left, PdfVerticalAlignment.Middle);
-                PdfStringFormat rightAlignment = new PdfStringFormat(PdfTextAlignment.Right, PdfVerticalAlignment.Middle);
+                //PdfStringFormat leftAlignment = new PdfStringFormat(PdfTextAlignment.Left, PdfVerticalAlignment.Middle);
+                //PdfStringFormat rightAlignment = new PdfStringFormat(PdfTextAlignment.Right, PdfVerticalAlignment.Middle);
+                PdfStringFormat centerAlignment = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Middle);
 
-                page.Canvas.DrawString(dto.Label1, font, new PdfSolidBrush(Color.Black), 0, 370,leftAlignment);
+                var textBrush = _service.SetColor(dto.RedText, dto.GreenText, dto.BlueText);
 
-                page.Canvas.DrawString(dto.TextFooter1, font, new PdfSolidBrush(Color.Black), 0, 400, leftAlignment);
+                page.Canvas.DrawString(dto.Label1, font, textBrush, page.Canvas.ClientSize.Width / 4, (page.Canvas.ClientSize.Height - (page.Canvas.ClientSize.Height / 6)) + 25, centerAlignment);
+                page.Canvas.DrawString(dto.Label2, font, textBrush, (page.Canvas.ClientSize.Width / 2) + (page.Canvas.ClientSize.Width / 4), (page.Canvas.ClientSize.Height - (page.Canvas.ClientSize.Height / 6)) + 25, centerAlignment);
 
-                page.Canvas.DrawString(dto.Label2, font, new PdfSolidBrush(Color.Black), page.Canvas.ClientSize.Width, 370, rightAlignment);
+                page.Canvas.DrawString(dto.TextFooter1, cfont, textBrush, page.Canvas.ClientSize.Width / 4, page.Canvas.ClientSize.Height - 30, centerAlignment);
+                page.Canvas.DrawString(dto.TextFooter2, cfont, textBrush, (page.Canvas.ClientSize.Width / 2) + (page.Canvas.ClientSize.Width / 4), page.Canvas.ClientSize.Height - 30, centerAlignment);
 
-                page.Canvas.DrawString(dto.TextFooter2, font, new PdfSolidBrush(Color.Black), page.Canvas.ClientSize.Width, 400, rightAlignment);
-                //page.Canvas.DrawString(dto.TextFooter1, font, new PdfSolidBrush(Color.Black), page.Canvas.ClientSize.Width / 2, 400, centerAlignment);
+                PdfImage image;
+                using (Bitmap bitMap = qrCode.GetGraphic(10))
+                {
+                    Bitmap resized = new Bitmap(bitMap, new Size(320, 340));
+
+                    resized.Save(img, ImageFormat.Png);
+
+                    image = PdfImage.FromStream(img);
 
 
+                }
 
-                page.Canvas.DrawImage(image, new PointF(tempwidth, 100));
+                float width = image.Width * 0.75f;
+
+                float height = image.Height * 0.75f;
+
+                float x = (page.Canvas.ClientSize.Width - width) / 2;
+
+                float y = (page.Canvas.ClientSize.Height - height) / 2;
+
+
+                page.Canvas.DrawImage(image, x, y, width, height);
                 doc.SaveToStream(ms);
                 doc.Close();
+
                 return File(ms.ToArray(), "application/pdf", "qr_exportado.pdf");
+
 
             }
         }

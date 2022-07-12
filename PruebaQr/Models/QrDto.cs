@@ -21,10 +21,9 @@ namespace PruebaQr.Models
         public byte GreenFooter { get; set; }
         public byte BlueFooter { get; set; }
 
-
-        public string ColorBody { get; set; }
-
-        public string ColorFooter { get; set; }
+        public byte RedText { get; set; }
+        public byte GreenText { get; set; }
+        public byte BlueText { get; set; }
 
         public string Plate { get; set; }
 
