@@ -20,6 +20,28 @@ namespace PruebaQr.LL
                 
         }
 
+        public dynamic AdjustCustomX(float pagew, float w)
+        {
+
+            float x = (pagew / 2 - w) / 2;
+            float xr = (pagew / 2) + x;
+
+            return (x,xr);
+        }
+
+        public dynamic AdjustQr(float w, float h,float pagew, float pageh)
+        {
+            float width = w * 0.75f;
+
+            float height = h * 0.75f;
+
+            float x = (pagew - width) / 2;
+
+            float y = (pageh - height) / 2;
+
+            return (x,y,width,height);
+        }
+
         public dynamic CreateCustomQr(string str)
         {
             QRCodeGenerator qrGenerator = new QRCodeGenerator();
@@ -77,7 +99,6 @@ namespace PruebaQr.LL
 
             return stream;
         }
-
 
     }
 }

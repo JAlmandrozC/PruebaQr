@@ -12,10 +12,6 @@ namespace PruebaQr.LL
 {
    public interface IQrService
     {
-
-
-
-
         dynamic CreateQr(Guid guid);
 
         void ResizeQr(PdfImage image);
@@ -26,8 +22,10 @@ namespace PruebaQr.LL
 
         Image GetImage(Uri uri);
 
-        dynamic SetColor(byte red,byte green, byte blue);  
+        dynamic SetColor(byte red,byte green, byte blue);
 
+        dynamic AdjustQr(float w, float h, float pagew, float pageh);
 
+        dynamic AdjustCustomX(float pagew,float w);
     }
 }

@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using PruebaQr.Areas.HelpPage.ModelDescriptions;
-using PruebaQr.Areas.HelpPage.Models;
 using PruebaQr.LL;
 using PruebaQr.Models;
 using QRCoder;
@@ -46,13 +43,10 @@ namespace PruebaQr.Areas.HelpPage.Controllers
 
             using (MemoryStream ms = new MemoryStream())
             {
-
                 // ----QRCoder - Libreria de Nugget
                 var qrCode = _service.CreateQr(dto.Id);
 
                 // ----FreeSpirePDF - Libreria de Nugget
-
-
 
                 PdfGraphicsState state = page.Canvas.Save();
 
@@ -86,13 +80,14 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                 //dibujar las imagenes
                 var brushRect = _service.SetColor(255, 255, 255);
 
-                float xr = (page.Canvas.ClientSize.Width / 2 - 180) / 2;
-                float xrn = (page.Canvas.ClientSize.Width / 2) + xr;
+
+
+                (float, float) tupleRect = _service.AdjustCustomX(page.Canvas.ClientSize.Width, 180);
 
                 //page.Canvas.DrawRectangle(brushRect, new RectangleF(xr,20,180,120));
                 //page.Canvas.DrawRectangle(brushRect, new RectangleF(xrn,20,180,120));
-                page.Canvas.DrawImage(logo1, new RectangleF(xr, 20, 180, 90));
-                page.Canvas.DrawImage(logo2, new RectangleF(xrn, 20, 180, 90));
+                page.Canvas.DrawImage(logo1, new RectangleF(tupleRect.Item1, 20, 180, 90));
+                page.Canvas.DrawImage(logo2, new RectangleF(tupleRect.Item2, 20, 180, 90));
 
                 //footer
 
@@ -124,20 +119,12 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                     resized.Save(img, ImageFormat.Png);
 
                     image = PdfImage.FromStream(img);
-
-
                 }
 
-                float width = image.Width * 0.75f;
 
-                float height = image.Height * 0.75f;
+                (float, float, float, float) tupleQr = _service.AdjustQr(image.Width, image.Height, page.Canvas.ClientSize.Width, page.Canvas.ClientSize.Height);
 
-                float x = (page.Canvas.ClientSize.Width - width) / 2;
-
-                float y = (page.Canvas.ClientSize.Height - height) / 2;
-
-
-                page.Canvas.DrawImage(image, x, y, width, height);
+                page.Canvas.DrawImage(image, tupleQr.Item1, tupleQr.Item2, tupleQr.Item3, tupleQr.Item4);
                 doc.SaveToStream(ms);
                 doc.Close();
 
@@ -149,7 +136,7 @@ namespace PruebaQr.Areas.HelpPage.Controllers
 
         [Route("qr/custom")]
         [HttpGet]
-        public async Task<ActionResult> QrCustomExport(int idempresa, string idproceso)
+        public async Task<ActionResult> QrCustomExport(QrDemandaDTo dto)
         {
             //Metodo para cargar las imagenes
 
@@ -158,89 +145,94 @@ namespace PruebaQr.Areas.HelpPage.Controllers
             PdfDocument doc = new PdfDocument();
 
             //Agregar paginas que tendra el pdf ( en este caso solo hay 1 )
-            PdfPageBase page = doc.Pages.Add(new SizeF(400, 150), new PdfMargins(0));
+            
 
             using (MemoryStream ms = new MemoryStream())
             {
-
-                // ----QRCoder - Libreria de Nugget
-                var qrCode = _service.CreateCustomQr(idproceso);
-
-                // ----FreeSpirePDF - Libreria de Nugget
-
-
-
-                PdfGraphicsState state = page.Canvas.Save();
-
-                //si se incluye texto, con esto se modifica los parametros que tendra ( estilos )
-                PdfTrueTypeFont font = new PdfTrueTypeFont(new Font("Helvetica", 20f, FontStyle.Bold), true);
-
-                PdfPen pen1 = new PdfPen(Color.Black, 1f);
-                page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(5, 5), new Size(390, 140)));
-
-                //dibujar figuras, en este caso un recantigulo que cubrira al pdf de azul para simular un fondo
-
-
-
-
-                //parametro y metodo para cargar las imagenes
-
-
-
-
-
-                //transformar el QR a imagen
-
-
-                //una variable temporal que asimila el valor mas cercano para centrar el gráfico de QR
-                var tempwidth = float.Parse((79.4).ToString()) / 2;
-
-                //dibujar las imagenes
-                //PdfPen pen1 = new PdfPen(Color.Red, 1f);
-                //page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(7, 7), new Size(125, 50)));
-                //page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(162, 7), new Size(125, 50)));
-
-                //footer
-
-                //var brushFooter = _service.SetColor(dto.ColorFooter);
-
-
-                //page.Canvas.DrawRectangle(brushFooter, new RectangleF(new Point(0, 350), PdfPageSize.A6));
-                //page.Canvas.Restore(state);
-
-                //Texto
-
-                //PdfStringFormat centerAlignment = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Middle);
-
-                page.Canvas.DrawString("D001-S001", font, new PdfSolidBrush(Color.Black), 150, 10);
-
-                page.Canvas.DrawString("EMPRESA", font, new PdfSolidBrush(Color.Black), 270, 10);
-
-                page.Canvas.DrawString("R02 0101002N", font, new PdfSolidBrush(Color.Black), 150, 40);
-
-                page.Canvas.DrawString("PERNOS-12", font, new PdfSolidBrush(Color.Black), 150, 70);
-
-                page.Canvas.DrawString("UBICACIÓN", font, new PdfSolidBrush(Color.Black), 150, 100);
-
-                //page.Canvas.DrawString(dto.TextFooter1 + "   " + dto.TextFooter2, font, new PdfSolidBrush(Color.Black), page.Canvas.ClientSize.Width / 2, 400, centerAlignment);
-                MemoryStream img = new MemoryStream();
-                PdfImage image;
-                using (Bitmap bitMap = qrCode.GetGraphic(10))
+                foreach (var item in dto.ItemsImprimirDTo)
                 {
-                    Bitmap resized = new Bitmap(bitMap, new Size(170, 170));
+                    // ----QRCoder - Libreria de Nugget
+                    PdfPageBase page = doc.Pages.Add(new SizeF(400, 150), new PdfMargins(0));
+                    var qrContent = $"{item.TipPro}{item.ArtCod}";
+                    var qrCode = _service.CreateCustomQr(qrContent);
 
-                    resized.Save(img, ImageFormat.Png);
-
-                    image = PdfImage.FromStream(img);
+                    // ----FreeSpirePDF - Libreria de Nugget
 
 
+
+                    PdfGraphicsState state = page.Canvas.Save();
+
+                    //si se incluye texto, con esto se modifica los parametros que tendra ( estilos )
+                    PdfTrueTypeFont font = new PdfTrueTypeFont(new Font("Helvetica", 12f, FontStyle.Bold), true);
+
+                    PdfPen pen1 = new PdfPen(Color.Black, 1f);
+                    page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(5, 5), new Size(390, 140)));
+
+                    //dibujar figuras, en este caso un recantigulo que cubrira al pdf de azul para simular un fondo
+
+
+
+
+                    //parametro y metodo para cargar las imagenes
+
+
+
+
+
+                    //transformar el QR a imagen
+
+
+                    //una variable temporal que asimila el valor mas cercano para centrar el gráfico de QR
+                    var tempwidth = float.Parse((79.4).ToString()) / 2;
+
+                    //dibujar las imagenes
+                    //PdfPen pen1 = new PdfPen(Color.Red, 1f);
+                    //page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(7, 7), new Size(125, 50)));
+                    //page.Canvas.DrawRectangle(pen1, new Rectangle(new Point(162, 7), new Size(125, 50)));
+
+                    //footer
+
+                    //var brushFooter = _service.SetColor(dto.ColorFooter);
+
+
+                    //page.Canvas.DrawRectangle(brushFooter, new RectangleF(new Point(0, 350), PdfPageSize.A6));
+                    //page.Canvas.Restore(state);
+
+                    //Texto
+
+                    //PdfStringFormat centerAlignment = new PdfStringFormat(PdfTextAlignment.Center, PdfVerticalAlignment.Middle);
+                    var dep = $"{item.Deposi}-{item.Sector}";
+                    page.Canvas.DrawString(dep, font, new PdfSolidBrush(Color.Black), 150, 10);
+                    
+                    page.Canvas.DrawString(dto.RazonSocial, font, new PdfSolidBrush(Color.Black), 270, 10);
+
+                    page.Canvas.DrawString(item.TipPro+" "+item.ArtCod, font, new PdfSolidBrush(Color.Black), 150, 40);
+
+                    page.Canvas.DrawString(item.Descrp, font, new PdfSolidBrush(Color.Black), 150, 70);
+
+                    page.Canvas.DrawString(item.UbiArt, font, new PdfSolidBrush(Color.Black), 150, 100);
+
+                    //page.Canvas.DrawString(dto.TextFooter1 + "   " + dto.TextFooter2, font, new PdfSolidBrush(Color.Black), page.Canvas.ClientSize.Width / 2, 400, centerAlignment);
+                    MemoryStream img = new MemoryStream();
+                    PdfImage image;
+                    using (Bitmap bitMap = qrCode.GetGraphic(10))
+                    {
+                        Bitmap resized = new Bitmap(bitMap, new Size(170, 170));
+
+                        resized.Save(img, ImageFormat.Png);
+
+                        image = PdfImage.FromStream(img);
+
+
+                    }
+
+                    page.Canvas.DrawImage(image, new PointF(10, 10));
+                    doc.SaveToStream(ms);
+                    
+                    
                 }
-
-                page.Canvas.DrawImage(image, new PointF(10, 10));
-                doc.SaveToStream(ms);
                 doc.Close();
                 return File(ms.ToArray(), "application/pdf", "qrcustom_exportado.pdf");
-
             }
         }
 
