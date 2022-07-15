@@ -83,6 +83,7 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                 p2.SetBold();
 
                 String t3 = $"{datos.TipPro}{datos.ArtCod}".Replace(" ", "");
+                t3 = t3 +" - "+datos.UniMed;
                 Paragraph p3 = new Paragraph(t3);
                 p3.SetFont(PdfFontFactory.CreateFont(StandardFonts.HELVETICA));
                 p3.SetFontSize(5);
