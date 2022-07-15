@@ -15,6 +15,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -26,15 +27,13 @@ namespace PruebaQr.Areas.HelpPage.Controllers
     public class TextController : Controller
     {
         // GET: HelpPage/Text
+        [AllowAnonymous]
         [Route("prueba")]
-        [HttpGet]
+        [HttpPost]
         public async Task<ActionResult> ITextTest(QrDemandaDTo dto)
         {
-
-
-
+            
             MemoryStream ms = new MemoryStream();
-
             PdfWriter pw = new PdfWriter(ms);
             PdfDocument pdfDocument = new PdfDocument(pw);
             Document doc = new Document(pdfDocument);
@@ -89,7 +88,7 @@ namespace PruebaQr.Areas.HelpPage.Controllers
                 p3.SetFontSize(5);
 
                 String t4 = datos.Descrp;
-                var temp = algo(t4,34);
+                var temp = transform(t4,34);
                 Paragraph p4 = new Paragraph(temp);
                 p4.SetFont(PdfFontFactory.CreateFont(StandardFonts.HELVETICA));
                 p4.SetFontSize(4);
@@ -139,7 +138,7 @@ namespace PruebaQr.Areas.HelpPage.Controllers
             return new FileStreamResult(ms, "application/pdf");
         }
 
-        public string algo(string text,int limite)
+        public string transform(string text,int limite)
         {
             int Length = text.Length;
             StringBuilder Append = new StringBuilder();
