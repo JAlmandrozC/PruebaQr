@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -7,7 +5,6 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using PruebaQr.LL;
 using PruebaQr.Models;
-using QRCoder;
 using Spire.Pdf;
 using Spire.Pdf.Graphics;
 

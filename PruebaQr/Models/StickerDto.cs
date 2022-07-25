@@ -21,7 +21,7 @@ namespace PruebaQr.Models
         public string ArtCod { get; set; }
         public string Descrp { get; set; }
         public string UniMed { get; set; }
-        public double Cantid { get; set; }
+        public Int32 Cantid { get; set; }
         public string UbiArt { get; set; }
     }
 
